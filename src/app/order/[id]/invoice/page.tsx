@@ -96,8 +96,19 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
       </div>
 
-      {/* Gunakan class sembunyikan-saat-print di div ini */}
-      <div className="fixed bottom-8 right-8 sembunyikan-saat-print">
+      {/* SUNTIKAN CSS LANGSUNG (Memaksa Browser Menyembunyikan Tombol Saat Print) */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media print {
+            #area-tombol-cetak {
+              display: none !important;
+            }
+          }
+        `
+      }} />
+
+      {/* Tambahkan id="area-tombol-cetak" ke div ini */}
+      <div id="area-tombol-cetak" className="fixed bottom-8 right-8">
         <PrintButton />
       </div>
 

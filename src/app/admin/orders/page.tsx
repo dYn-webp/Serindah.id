@@ -8,7 +8,6 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Modal State untuk Pop-up Gambar
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -41,7 +40,7 @@ export default function AdminOrdersPage() {
       });
       if (res.ok) {
         alert("Status pesanan berhasil diperbarui!");
-        fetchOrders(); // Refresh tabel setelah diupdate
+        fetchOrders(); 
       } else {
         alert("Gagal memperbarui status.");
       }
@@ -56,15 +55,18 @@ export default function AdminOrdersPage() {
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
       <Sidebar />
-      <main className="flex-1 p-8 ml-64 overflow-y-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900">Manajemen Pesanan</h1>
-          <p className="text-slate-500 mt-1">Cek bukti transfer dan perbarui status pengiriman.</p>
+      
+      {/* AREA KONTEN UTAMA */}
+      <main className="flex-1 w-full min-w-0 p-5 pt-20 md:p-8 md:ml-64">
+        
+        <header className="mb-8 pl-12 md:pl-0">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900">Manajemen Pesanan</h1>
+          <p className="text-sm text-slate-500 mt-1">Cek bukti transfer dan perbarui status pengiriman.</p>
         </header>
 
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left min-w-[800px]">
               <thead className="bg-slate-50 text-slate-500 text-sm">
                 <tr>
                   <th className="p-4 font-bold border-b">ID & Info Pelanggan</th>
@@ -89,23 +91,23 @@ export default function AdminOrdersPage() {
                         <div className="text-xs text-slate-500">{order.customerPhone}</div>
                         <div className="text-xs text-slate-400 mt-1 truncate max-w-[200px]">{order.address}</div>
                       </td>
-                      <td className="p-4 font-bold text-emerald-600">
+                      <td className="p-4 font-bold text-emerald-600 whitespace-nowrap">
                         Rp {order.totalAmount.toLocaleString('id-ID')}
                       </td>
                       <td className="p-4">
                         {order.paymentProof ? (
                           <button 
                             onClick={() => setSelectedImage(order.paymentProof)}
-                            className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold transition-colors"
+                            className="flex items-center gap-1 text-xs md:text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold transition-colors whitespace-nowrap"
                           >
                             <Eye size={16} /> Cek Bukti
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-400 italic font-medium">Belum Upload</span>
+                          <span className="text-xs text-slate-400 italic font-medium whitespace-nowrap">Belum Upload</span>
                         )}
                       </td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
+                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full whitespace-nowrap ${
                           order.status === 'PENDING' ? 'bg-slate-100 text-slate-600' :
                           order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' :
                           order.status === 'PACKING' ? 'bg-orange-100 text-orange-700' :
@@ -113,15 +115,15 @@ export default function AdminOrdersPage() {
                           'bg-emerald-100 text-emerald-700'
                         }`}>
                           {order.status === 'PENDING' ? 'BELUM BAYAR' :
-                           order.status === 'VERIFYING' ? 'MENUNGGU VERIFIKASI' :
-                           order.status === 'PACKING' ? 'SEDANG DIPACKING' :
-                           order.status === 'SHIPPING' ? 'DALAM PERJALANAN' : 'SELESAI'}
+                           order.status === 'VERIFYING' ? 'VERIFIKASI ADMIN' :
+                           order.status === 'PACKING' ? 'DIPACKING' :
+                           order.status === 'SHIPPING' ? 'PERJALANAN' : 'SELESAI'}
                         </span>
                       </td>
                       <td className="p-4">
                          <div className="flex justify-center">
                             <select 
-                              className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer"
+                              className="text-xs border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer"
                               value={order.status}
                               onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                               disabled={updatingId === order.id}
@@ -139,7 +141,7 @@ export default function AdminOrdersPage() {
                           href={`/order/${order.id}/invoice`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors shadow-sm"
+                          className="inline-flex items-center gap-1 bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors shadow-sm whitespace-nowrap"
                         >
                           🖨️ Cetak
                         </a>

@@ -113,9 +113,9 @@ export default function CartPage() {
                   <span className="text-emerald-600">Rp {grandTotal.toLocaleString('id-ID')}</span>
                 </div>
                 
-                <button className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-transform active:scale-95">
+                <Link href="/checkout" className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-transform active:scale-95">
                   Lanjut ke Pembayaran <ArrowRight size={18} />
-                </button>
+                </Link>
               </div>
             </div>
 

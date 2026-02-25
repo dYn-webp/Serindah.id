@@ -50,3 +50,10 @@ textarea,
 .card {
   border-radius: var(--radius);
 }
+
+/* Tambahkan ini di paling bawah file globals.css */
+@media print {
+  .sembunyikan-saat-print {
+    display: none !important;
+  }
+}

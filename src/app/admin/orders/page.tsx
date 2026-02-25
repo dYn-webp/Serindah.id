@@ -1,101 +1,188 @@
 // src/app/admin/orders/page.tsx
-import AdminSidebar from "@/components/admin/Sidebar";
-import { prisma } from "@/lib/prisma";
-import OrderStatusButton from "@/components/admin/OrderStatusButton"; // Pastikan file ini sudah dibuat sebelumnya
+"use client";
+import { useState, useEffect } from "react";
+import Sidebar from "@/components/admin/Sidebar";
+import { Eye, X } from "lucide-react";
 
-export default async function OrdersPage() {
-  // Ambil data pesanan dari database, urutkan dari yang terbaru
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      items: {
-        include: {
-          product: true // Ambil detail nama produk di dalam pesanan
-        }
-      }
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Modal State untuk Pop-up Gambar
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("/api/admin/orders");
+      const data = await res.json();
+      setOrders(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const confirmUpdate = confirm("Yakin ingin mengubah status pesanan ini?");
+    if (!confirmUpdate) return;
+
+    setUpdatingId(id);
+    try {
+      const res = await fetch(`/api/orders/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        alert("Status pesanan berhasil diperbarui!");
+        fetchOrders(); // Refresh tabel setelah diupdate
+      } else {
+        alert("Gagal memperbarui status.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan jaringan.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <AdminSidebar />
-      <main className="ml-64 flex-1 p-8">
+    <div className="flex min-h-screen bg-slate-50 font-sans">
+      <Sidebar />
+      <main className="flex-1 p-8 ml-64 overflow-y-auto">
         <header className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">Daftar Pesanan Masuk</h1>
-          <p className="text-slate-500 text-sm">Kelola pesanan pelanggan dan perbarui status pengiriman.</p>
+          <h1 className="text-3xl font-black text-slate-900">Manajemen Pesanan</h1>
+          <p className="text-slate-500 mt-1">Cek bukti transfer dan perbarui status pengiriman.</p>
         </header>
-        
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          {orders.length === 0 ? (
-             <div className="text-center py-16">
-               <span className="text-4xl mb-4 block">📦</span>
-               <p className="text-slate-500 font-medium">Belum ada pesanan masuk.</p>
-             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600 border-b border-slate-100">
-                  <tr>
-                    <th className="p-4 font-bold rounded-tl-lg">Pelanggan</th>
-                    <th className="p-4 font-bold">Kontak & Alamat</th>
-                    <th className="p-4 font-bold">Ringkasan Pesanan</th>
-                    <th className="p-4 font-bold">Total Tagihan</th>
-                    <th className="p-4 font-bold">Status</th>
-                    <th className="p-4 font-bold rounded-tr-lg">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50/50 transition">
+
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-slate-500 text-sm">
+                <tr>
+                  <th className="p-4 font-bold border-b">ID & Info Pelanggan</th>
+                  <th className="p-4 font-bold border-b">Total Bayar</th>
+                  <th className="p-4 font-bold border-b">Bukti Transfer</th>
+                  <th className="p-4 font-bold border-b">Status Saat Ini</th>
+                  <th className="p-4 font-bold border-b text-center">Ubah Status</th>
+                  <th className="p-4 font-bold border-b text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  <tr><td colSpan={6} className="p-8 text-center text-slate-500">Memuat data pesanan...</td></tr>
+                ) : orders.length === 0 ? (
+                  <tr><td colSpan={6} className="p-8 text-center text-slate-500">Belum ada pesanan masuk.</td></tr>
+                ) : (
+                  orders.map(order => (
+                    <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-4">
-                        <p className="font-bold text-slate-800">{order.customerName}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          {new Date(order.createdAt).toLocaleDateString('id-ID', {
-                            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                          })}
-                        </p>
+                        <div className="font-bold text-slate-900">#{order.id.slice(-6).toUpperCase()}</div>
+                        <div className="text-sm text-slate-700">{order.customerName}</div>
+                        <div className="text-xs text-slate-500">{order.customerPhone}</div>
+                        <div className="text-xs text-slate-400 mt-1 truncate max-w-[200px]">{order.address}</div>
                       </td>
-                      <td className="p-4 max-w-[200px]">
-                        <p className="font-medium text-emerald-600">{order.customerPhone}</p>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-0.5" title={order.address}>{order.address}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-slate-800 font-bold text-xs">{order.items.length} macam barang</p>
-                        <ul className="text-[11px] text-slate-500 mt-1 space-y-0.5">
-                          {/* @ts-ignore */}
-                          {order.items.slice(0, 2).map((item) => (
-                            <li key={item.id}>• {item.quantity}x {item.product.name}</li>
-                          ))}
-                          {order.items.length > 2 && <li className="italic text-slate-400">...dan lainnya</li>}
-                        </ul>
-                      </td>
-                      <td className="p-4 font-black text-slate-800">
+                      <td className="p-4 font-bold text-emerald-600">
                         Rp {order.totalAmount.toLocaleString('id-ID')}
                       </td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                          order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                          order.status === 'PAID' ? 'bg-blue-100 text-blue-700' :
-                          order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-700' :
+                        {order.paymentProof ? (
+                          <button 
+                            onClick={() => setSelectedImage(order.paymentProof)}
+                            className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold transition-colors"
+                          >
+                            <Eye size={16} /> Cek Bukti
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic font-medium">Belum Upload</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
+                          order.status === 'PENDING' ? 'bg-slate-100 text-slate-600' :
+                          order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'PACKING' ? 'bg-orange-100 text-orange-700' :
+                          order.status === 'SHIPPING' ? 'bg-blue-100 text-blue-700' :
                           'bg-emerald-100 text-emerald-700'
                         }`}>
-                          {order.status}
+                          {order.status === 'PENDING' ? 'BELUM BAYAR' :
+                           order.status === 'VERIFYING' ? 'MENUNGGU VERIFIKASI' :
+                           order.status === 'PACKING' ? 'SEDANG DIPACKING' :
+                           order.status === 'SHIPPING' ? 'DALAM PERJALANAN' : 'SELESAI'}
                         </span>
                       </td>
                       <td className="p-4">
-                        <OrderStatusButton 
-                          orderId={order.id} 
-                          currentStatus={order.status} 
-                        />
+                         <div className="flex justify-center">
+                            <select 
+                              className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer"
+                              value={order.status}
+                              onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                              disabled={updatingId === order.id}
+                            >
+                              <option value="PENDING">Belum Bayar</option>
+                              <option value="VERIFYING">Verifikasi Bukti</option>
+                              <option value="PACKING">Proses Packing</option>
+                              <option value="SHIPPING">Perjalanan (Kirim)</option>
+                              <option value="COMPLETED">Selesai Diterima</option>
+                            </select>
+                         </div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <a 
+                          href={`/order/${order.id}/invoice`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors shadow-sm"
+                        >
+                          🖨️ Cetak
+                        </a>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
+
+      {/* MODAL GAMBAR BUKTI TRANSFER */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl p-5 md:p-6 max-w-lg w-full relative shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-lg text-slate-800">Foto Bukti Transfer</h3>
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 p-2 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex justify-center bg-slate-50 rounded-xl p-2 border border-slate-100">
+              <img 
+                src={selectedImage} 
+                alt="Bukti Transfer" 
+                className="max-h-[65vh] w-auto rounded-lg object-contain" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

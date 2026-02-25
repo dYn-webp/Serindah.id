@@ -1,9 +1,10 @@
 // src/components/shared/Navbar.tsx
 "use client";
 import React from 'react';
-import { ShoppingCart, Search, Bell, HelpCircle } from "lucide-react";
+import { ShoppingCart, Search, Bell, HelpCircle, Snowflake, ClipboardList } from "lucide-react";
 import Link from "next/link"; 
 import { useCart } from "@/context/CartContext";
+
 
 export default function Navbar() {
   const { cartCount } = useCart();
@@ -52,6 +53,11 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+
+        {/* Ikon Riwayat Pesanan */}
+        <Link href="/history" className="text-gray-600 hover:text-orange-500 transition-colors flex items-center justify-center">
+          <ClipboardList className="w-6 h-6 md:w-7 md:h-7" />
+        </Link>
 
         {/* Ikon Keranjang */}
         <Link href="/cart" className="relative group cursor-pointer pr-1 md:pr-4 flex-shrink-0">

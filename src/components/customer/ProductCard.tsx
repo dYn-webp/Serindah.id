@@ -1,6 +1,6 @@
 // src/components/customer/ProductCard.tsx
-"use client"; // Wajib ditambahkan karena ada interaksi tombol
-import { ShoppingCart } from "lucide-react";
+"use client"; 
+import { ShoppingCart, Heart, Star } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
@@ -13,51 +13,68 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ id, name, price, stock, category, image }: ProductCardProps) {
-  const { addToCart } = useCart(); // Ambil fungsi tambah ke keranjang
+  const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Mencegah pindah halaman jika kartu dibungkus Link nanti
+    e.preventDefault(); 
+    e.stopPropagation(); // Mencegah bentrok jika card ini dibungkus link URL
     addToCart({ id, name, price, image });
-    alert(`${name} berhasil ditambahkan ke keranjang!`); // Notifikasi sementara
+    alert(`${name} berhasil ditambahkan ke keranjang!`);
   };
 
   return (
-    <div className="bg-white border-r border-b border-slate-100 hover:border-emerald-500 hover:shadow-lg transition-all duration-300 relative group cursor-pointer flex flex-col h-full">
-      <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-1 z-10 rounded-bl-lg shadow-sm">
-        15% OFF
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 p-3 flex flex-col relative group transition-all h-full">
+      {/* Tombol Wishlist (Opsional/Estetika) */}
+      <button className="absolute top-4 right-4 z-10 text-gray-300 hover:text-red-500 transition-colors bg-white/80 p-1.5 rounded-xl backdrop-blur-sm">
+        <Heart size={18} />
+      </button>
+
+      {/* Badge Promo */}
+      <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-xl z-10 shadow-sm">
+        PROMO
       </div>
 
-      <div className="aspect-square bg-slate-50 overflow-hidden relative">
-        <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+      {/* Area Gambar Produk */}
+      <div className="relative rounded-xl overflow-hidden bg-gray-100 aspect-square mb-3">
+        <img 
+          src={image} 
+          alt={name} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+          onError={(e) => {
+            // Jika gambar dari database error/kosong, otomatis ganti ke gambar default ini
+            e.currentTarget.src = "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=300&h=300&fit=crop";
+          }}
+        />
+      </div>
+
+      {/* Detail Text Produk */}
+      <div className="flex flex-col flex-1">
+        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-1 flex-1">{name}</h3>
         
-        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
-          {/* Tambahkan onClick di tombol ini */}
+        <div className="flex items-center gap-1 mb-2">
+          <div className="flex text-yellow-400">
+            <Star size={12} fill="currentColor" stroke="none" />
+            <Star size={12} fill="currentColor" stroke="none" />
+            <Star size={12} fill="currentColor" stroke="none" />
+            <Star size={12} fill="currentColor" stroke="none" />
+            <Star size={12} fill="currentColor" stroke="none" />
+          </div>
+          <span className="text-[10px] text-gray-500">Terjual 1k+</span>
+        </div>
+
+        {/* Harga & Tombol Beli */}
+        <div className="flex justify-between items-end mt-auto pt-2">
+          <div>
+            <div className="text-xs text-orange-500 font-medium mb-0.5">Sisa {stock}</div>
+            <div className="text-sm text-gray-400 line-through mb-0.5">Rp {(price + 15000).toLocaleString('id-ID')}</div>
+            <div className="text-lg font-bold text-gray-900">Rp {price.toLocaleString('id-ID')}</div>
+          </div>
           <button 
             onClick={handleAddToCart}
-            className="bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 hover:scale-105 transition-all shadow-lg transform translate-y-4 group-hover:translate-y-0"
+            className="w-9 h-9 rounded-xl bg-orange-100 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
           >
-            <ShoppingCart size={14} /> Tambah
+            <ShoppingCart size={16} />
           </button>
-        </div>
-      </div>
-
-      <div className="p-3 flex flex-col flex-1 justify-between">
-        <div>
-          <h3 className="text-sm font-medium text-slate-800 line-clamp-2 leading-snug mb-1">{name}</h3>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-emerald-600 font-bold text-lg">Rp {price.toLocaleString('id-ID')}</span>
-            <span className="text-[10px] text-slate-400 line-through">Rp {(price + 15000).toLocaleString('id-ID')}</span>
-          </div>
-        </div>
-
-        <div className="mt-2">
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-1">
-             <div className="bg-emerald-500 h-full w-3/4 rounded-full" />
-          </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-500">
-            <span className="uppercase font-bold text-emerald-600">Sisa {stock}</span>
-            <span>1.2rb Terjual</span>
-          </div>
         </div>
       </div>
     </div>

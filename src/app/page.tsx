@@ -2,82 +2,121 @@
 import Navbar from "@/components/shared/Navbar";
 import { ProductCard } from "@/components/customer/ProductCard";
 import { prisma } from "@/lib/prisma";
-import { Product } from "@prisma/client"; // <--- 1. TAMBAHKAN BARIS INI
+import { Product } from "@prisma/client";
 
 export default async function Home() {
-  // MENGAMBIL DATA PRODUK ASLI DARI DATABASE (Tampilkan 12 produk terbaru)
   const products = await prisma.product.findMany({
     orderBy: { createdAt: 'desc' },
     take: 12,
   });
 
+  // Mengambil data banner (Pastikan model Banner sudah ada di schema.prisma)
+  const bannersData = await prisma.banner.findMany({
+    where: { isActive: true }
+  }).catch(() => []); // Fallback array kosong jika tabel belum di-migrate
+
+  const banners: Record<string, any> = {};
+  bannersData.forEach((b) => { banners[b.position] = b; });
+
   return (
-    <main className="min-h-screen bg-[#F5F5F5] pb-20 text-slate-800">
+    // Latar belakang putih es (sangat bersih)
+    <main className="min-h-screen bg-[#F4F9FD] pb-20 text-slate-800 font-sans">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 mt-4 md:mt-6">
-        {/* Hero Banner */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-auto md:h-[300px]">
-          <div className="md:col-span-2 h-[180px] md:h-full bg-slate-800 rounded-lg overflow-hidden relative group cursor-pointer shadow-sm">
-             <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent z-10 p-6 md:p-10 flex flex-col justify-center">
-                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded w-fit mb-2">PROMO SPESIAL</span>
-                <h2 className="text-white text-2xl md:text-4xl font-black mb-1 md:mb-2 uppercase tracking-tight">Pesta Bakso & Nugget</h2>
-                <p className="text-emerald-400 font-medium text-sm md:text-base">Diskon hingga 50% khusus pesanan hari ini!</p>
+      <div className="max-w-7xl mx-auto px-4 mt-6">
+        
+        {/* ================= HERO BANNER (DINGIN & HIGIENIS) ================= */}
+        <div className="flex flex-col md:flex-row gap-5">
+          
+          {/* MAIN BANNER - Biru Laut (blue-600) */}
+          <div className="relative w-full md:w-2/3 min-h-[260px] md:min-h-[400px] bg-blue-600 rounded-2xl overflow-hidden group cursor-pointer shadow-sm border border-blue-200 flex">
+             <img 
+                src={banners["MAIN"]?.imageUrl || "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?q=80&w=800&h=400&fit=crop"} 
+                className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 mix-blend-overlay group-hover:scale-105 transition-all duration-700" 
+                alt="Main Banner" 
+             />
+             
+             {/* Gradien biru dingin ke transparan */}
+             <div className="relative z-10 w-full h-full flex flex-col justify-center p-8 md:p-14 bg-gradient-to-r from-blue-900/80 via-blue-600/50 to-transparent">
+                {banners["MAIN"]?.subtitle && (
+                  <span className="bg-cyan-100 text-cyan-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-2xl w-fit mb-4 uppercase tracking-wider shadow-sm">
+                    {banners["MAIN"].subtitle}
+                  </span>
+                )}
+                <h2 className="text-white text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight max-w-lg drop-shadow-md">
+                  {banners["MAIN"]?.title || "Kesegaran Kualitas Super Langsung dari Cold Storage"}
+                </h2>
+                <button className="bg-white text-blue-700 text-xs md:text-sm font-bold px-8 py-3.5 rounded-2xl w-fit hover:bg-cyan-50 transition-colors shadow-sm mt-2">
+                  Lihat Katalog
+                </button>
              </div>
-             <img src="https://images.unsplash.com/photo-1547050605-2f267027376a?q=80&w=800&h=400&fit=crop" className="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-80" alt="Main Banner" />
           </div>
-          <div className="flex flex-row md:flex-col gap-2 h-[100px] md:h-full">
-            <div className="w-1/2 md:w-full h-full md:h-1/2 bg-emerald-100 rounded-lg overflow-hidden cursor-pointer shadow-sm relative group">
-               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10" />
-               <img src="https://images.unsplash.com/photo-1585325701165-351af9ad665e?q=80&w=400&h=200&fit=crop" className="w-full h-full object-cover" alt="Sub Banner 1" />
+
+          {/* SUB BANNERS - Biru Es Terang (sky-50) */}
+          <div className="w-full md:w-1/3 flex flex-row md:flex-col gap-5">
+            
+            {/* SUB 1 */}
+            <div className="relative flex-1 min-h-[140px] md:min-h-[190px] bg-sky-100 rounded-2xl overflow-hidden group cursor-pointer shadow-sm border border-sky-200">
+               <img src={banners["SUB_1"]?.imageUrl || "https://images.unsplash.com/photo-1603048297172-c92544798d5e?q=80&w=400&h=200&fit=crop"} className="absolute inset-0 w-full h-full object-cover z-0 opacity-50 group-hover:scale-105 transition duration-700" alt="Daging Sapi Beku" />
+               <div className="relative z-10 w-full h-full flex flex-col justify-end p-6 bg-gradient-to-t from-white/95 via-white/60 to-transparent">
+                  <h3 className="text-blue-950 font-extrabold text-base md:text-xl leading-tight">{banners["SUB_1"]?.title || "Daging Sapi Segar"}</h3>
+                  <p className="text-blue-600 text-[11px] md:text-xs font-semibold mt-1">{banners["SUB_1"]?.subtitle || "Potongan Premium Beku"}</p>
+               </div>
             </div>
-            <div className="w-1/2 md:w-full h-full md:h-1/2 bg-blue-100 rounded-lg overflow-hidden cursor-pointer shadow-sm relative group">
-               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10" />
-               <img src="https://images.unsplash.com/photo-1615485290382-441e4d0c9cb5?q=80&w=400&h=200&fit=crop" className="w-full h-full object-cover" alt="Sub Banner 2" />
+            
+            {/* SUB 2 */}
+            <div className="relative flex-1 min-h-[140px] md:min-h-[190px] bg-sky-100 rounded-2xl overflow-hidden group cursor-pointer shadow-sm border border-sky-200">
+               <img src={banners["SUB_2"]?.imageUrl || "https://images.unsplash.com/photo-1615485290382-441e4d0c9cb5?q=80&w=400&h=200&fit=crop"} className="absolute inset-0 w-full h-full object-cover z-0 opacity-50 group-hover:scale-105 transition duration-700" alt="Seafood Beku" />
+               <div className="relative z-10 w-full h-full flex flex-col justify-end p-6 bg-gradient-to-t from-white/95 via-white/60 to-transparent">
+                  <h3 className="text-blue-950 font-extrabold text-base md:text-xl leading-tight">{banners["SUB_2"]?.title || "Seafood Tangkapan Laut"}</h3>
+                  <p className="text-blue-600 text-[11px] md:text-xs font-semibold mt-1">{banners["SUB_2"]?.subtitle || "Dibekukan di Kapal (FAS)"}</p>
+               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Section Kategori */}
-        <div className="bg-white mt-4 md:mt-6 p-4 md:p-6 rounded-lg shadow-sm grid grid-cols-4 md:grid-cols-8 gap-4 text-center">
-          {['Ayam', 'Daging', 'Ikan', 'Sosis', 'Bakso', 'Kentang', 'Sayur', 'Paket'].map((cat) => (
-            <div key={cat} className="group cursor-pointer">
-              <div className="w-10 h-10 md:w-14 md:h-14 mx-auto bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 group-hover:border-emerald-500 group-hover:bg-emerald-50 transition-all shadow-sm group-hover:shadow-md">
-                <div className="w-5 h-5 md:w-6 md:h-6 bg-emerald-500/20 rounded-full group-hover:bg-emerald-500 transition-colors" />
-              </div>
-              <p className="text-[10px] md:text-[12px] mt-2 text-slate-600 group-hover:text-emerald-600 font-bold">{cat}</p>
-            </div>
+        {/* ================= CATEGORY FILTER ================= */}
+        <div className="mt-8 mb-4 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {['Semua Produk', 'Daging Sapi', 'Seafood', 'Unggas', 'Sayuran Beku'].map((cat, idx) => (
+            <button key={cat} className={`whitespace-nowrap px-6 py-2.5 rounded-2xl text-sm font-semibold transition-all border ${
+              idx === 0 
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                : 'bg-white text-slate-500 border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 hover:text-blue-600'
+            }`}>
+              {cat}
+            </button>
           ))}
         </div>
 
-        {/* Produk Section */}
-        <div className="bg-white mt-6 rounded-lg shadow-sm overflow-hidden">
-           <div className="p-4 border-b flex justify-between items-center bg-slate-50">
-              <div className="flex items-center gap-2">
-                <h2 className="text-emerald-600 font-black text-lg md:text-xl italic tracking-tighter uppercase">
-                  🔥 Rekomendasi Hari Ini
-                </h2>
-              </div>
-           </div>
-           
-           {products.length === 0 ? (
-             <div className="p-10 text-center text-slate-500">Belum ada produk. Tambahkan produk melalui Dashboard Admin.</div>
-           ) : (
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-0">
-                {products.map((product: Product) => (
-                  <ProductCard 
-                    key={product.id}
-                    id={product.id.toString()} // Prisma ID adalah Int, kita ubah ke String untuk Context
-                    name={product.name}
-                    price={product.price}
-                    stock={product.stock}
-                    category={product.category}
-                    image={product.image || "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=300&h=300&fit=crop"}
-                  />
-                ))}
-             </div>
-           )}
+        {/* ================= PRODUCT SECTION ================= */}
+        <div className="mt-8 mb-6">
+          <h2 className="text-slate-900 font-black text-xl md:text-2xl tracking-tight">
+            Produk <span className="text-cyan-600">Terbaru</span>
+          </h2>
         </div>
+           
+        {/* Render Produk Menggunakan Grid Baru */}
+        {products.length === 0 ? (
+          <div className="p-10 text-center text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-100">
+            Belum ada produk. Tambahkan produk melalui Dashboard Admin.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {products.map((product: Product) => (
+              <ProductCard 
+                key={product.id}
+                id={product.id.toString()}
+                name={product.name}
+                price={product.price}
+                stock={product.stock}
+                category={product.category}
+                image={product.image || "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=300&h=300&fit=crop"}
+              />
+            ))}
+          </div>
+        )}
+
       </div>
     </main>
   );

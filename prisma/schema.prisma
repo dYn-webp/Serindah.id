@@ -52,3 +52,15 @@ model OrderItem {
   quantity  Int
   price     Int     
 }
+
+// MODEL BARU: Untuk menyimpan data Banner Beranda
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  subtitle  String?
+  imageUrl  String
+  position  String   @unique // Misalnya: "MAIN", "SUB_1", "SUB_2"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

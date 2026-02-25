@@ -1,26 +1,88 @@
-// src/components/customer/Hero.tsx
-export default function Hero() {
+// src/components/customer/ProductCard.tsx
+"use client";
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import toast from "react-hot-toast";
+
+interface ProductCardProps {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  category: string;
+  image: string;
+}
+
+export function ProductCard({ id, name, price, stock, category, image }: ProductCardProps) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    addToCart({ id, name, price, image });
+    toast.success(`${name} masuk ke keranjang`, {
+        style: { 
+          borderRadius: '12px', 
+          background: '#ea580c', /* orange-600 */
+          color: '#fff', 
+          fontSize: '13px',
+          fontWeight: '500'
+        },
+        iconTheme: { primary: '#ffedd5', secondary: '#ea580c' }, /* orange-100 & orange-600 */
+    });
+  };
+
   return (
-    <div className="bg-blue-50 py-12 px-4 rounded-3xl my-6 max-w-7xl mx-auto flex flex-col md:flex-row items-center overflow-hidden">
-      <div className="flex-1 space-y-4 text-center md:text-left">
-        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-          🔥 Stok Terbaru Minggu Ini
+    <div className="group bg-white border border-slate-100 rounded-2xl hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col h-full overflow-hidden">
+      
+      {/* Gambar & Label */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-orange-50/50">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <span className="absolute top-3 left-3 bg-white/95 backdrop-blur text-orange-600 text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+          {category}
         </span>
-        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
-          Frozen Food Segar, <br /> 
-          <span className="text-blue-600">Langsung ke Dapurmu.</span>
-        </h1>
-        <p className="text-gray-600 max-w-md">
-          Hemat waktu masak dengan pilihan frozen food kualitas premium. Pengiriman instan untuk menjaga kualitas suhu.
-        </p>
-        <button className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition">
-          Belanja Sekarang
-        </button>
       </div>
-      <div className="flex-1 mt-8 md:mt-0 flex justify-center">
-        {/* Placeholder untuk gambar produk estetik */}
-        <div className="w-64 h-64 bg-white rounded-2xl shadow-xl rotate-3 flex items-center justify-center p-4">
-           <img src="/placeholder-frozen.png" alt="Produk Unggulan" className="rounded-lg object-contain" />
+
+      {/* Informasi Produk */}
+      <div className="p-4 flex flex-col flex-1">
+        
+        {/* Nama dan Berat (Opsional) */}
+        <div className="mb-3">
+          <h3 className="font-bold text-slate-800 text-sm leading-snug line-clamp-2 mb-1 group-hover:text-orange-500 transition-colors">
+            {name}
+          </h3>
+          {/* Anda bisa menyesuaikan deskripsi berat ini dengan data dinamis jika ada */}
+          <p className="text-[11px] font-medium text-slate-400">Kemasan Praktis</p>
+        </div>
+
+        <div className="mt-auto">
+          {/* Harga dan Ketersediaan Stok */}
+          <div className="flex items-end justify-between mb-4">
+             <div>
+                <span className="text-[10px] text-slate-400 font-medium block mb-0.5">Harga</span>
+                <div className="text-orange-500 font-black text-[16px] leading-none">
+                  Rp {price.toLocaleString('id-ID')}
+                </div>
+             </div>
+             <div className="text-right">
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${stock > 0 ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-500'}`}>
+                  {stock > 0 ? `Sisa: ${stock}` : 'Habis'}
+                </span>
+             </div>
+          </div>
+
+          {/* Tombol Add to Cart (Oranye Segar) */}
+          <button
+            onClick={handleAddToCart}
+            disabled={stock <= 0}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-slate-100 disabled:text-slate-400 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+          >
+            <ShoppingBag size={16} />
+            {stock > 0 ? '+ Keranjang' : 'Stok Kosong'}
+          </button>
         </div>
       </div>
     </div>

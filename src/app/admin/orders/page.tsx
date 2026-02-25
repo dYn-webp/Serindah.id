@@ -53,11 +53,12 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    /* PERBAIKAN: Hapus "flex", cukup gunakan min-h-screen dan warna background */
+    <div className="min-h-screen bg-slate-50 font-sans block">
       <Sidebar />
       
-      {/* AREA KONTEN UTAMA */}
-      <main className="flex-1 w-full min-w-0 p-5 pt-20 md:p-8 md:ml-64">
+      {/* PERBAIKAN: Hapus flex-1 dan w-full. Cukup atur padding dan margin (md:ml-64) */}
+      <main className="p-5 pt-20 md:p-8 md:ml-64 transition-all duration-300">
         
         <header className="mb-8 pl-12 md:pl-0">
           <h1 className="text-2xl md:text-3xl font-black text-slate-900">Manajemen Pesanan</h1>
